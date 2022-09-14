@@ -127,7 +127,7 @@ int main(int argc , char *argv[])
 					(address.sin_port));  
 
 			//send new connection greeting message 
-			if( send(new_socket, message, strlen(message), 0) != strlen(message) )  
+			if( send(new_socket, ":bar.example.com 001 edassess : Welcome to the Internet Relay Network amy!amy@foo.example.com", strlen(":bar.example.com 001 amy : Welcome to the Internet Relay Network amy!amy@foo.example.com"), 0) != strlen(message) )  
 			{  
 				perror("send");  
 			}  
@@ -176,7 +176,7 @@ int main(int argc , char *argv[])
 					//set the string terminating NULL byte on the end 
 					//of the data read 
 					buffer[valread] = '\0';  
-					printf("%s\t Message received by server\n", buffer);
+					printf("%s\n", buffer);
 					send(sd , buffer , strlen(buffer) , 0 );  
 				}  
 			}  
