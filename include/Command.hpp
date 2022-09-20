@@ -8,6 +8,7 @@ enum	Command
 {
 	NICK,
 	USER,
+	CAP,
 };
 
 #endif

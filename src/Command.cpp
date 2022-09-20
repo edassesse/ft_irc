@@ -1,4 +1,5 @@
 #include "../include/Command.hpp"
+#include "../include/User.hpp"
  
 void split(std::string const &str, const char* delim, std::vector<std::string> &out)
 {
@@ -14,9 +15,10 @@ void	dispatch_cmd(std::string buffer)
 {
     std::vector<std::string>	out;
     std::string					s = buffer;
-	std::string					cmd_name[2] = {"NICK", "USER"};
+	std::string					cmd_name[3] = {"NICK", "USER", "CAP"};
     const char*					delim = " ";
 	int							i;
+	User						*user;
 
     split(s, delim, out);
 	std::cout << "Commande Split :" << std::endl;
@@ -29,15 +31,38 @@ void	dispatch_cmd(std::string buffer)
 	}
 	switch (i)
 	{
+		case CAP :
+			std::cout << "Cap switch" << std::endl;
+			user = command_cap(buffer, out);
+			break;
 		case NICK :
 			std::cout << "Nick switch" << std::endl;
-			// command_nick(buffer, out);
+			command_nick(buffer, out);
 			break;
 		case USER :
 			std::cout << "User switch" << std::endl;
-			// command_user(buffer, out);
+			command_user(buffer, out);
 			break;
 		default :
 			std::cout << "Unknow command" << std::endl;
 	}
+}
+
+User	*command_cap(std::string buffer, std::vector<std::string> out)
+{
+	User	*user;
+
+	return (user);
+}
+
+User	*command_nick(std::string buffer, std::vector<std::string> out, User *user)
+{
+	set_nickname(out[2]);
+	return (user);
+}
+
+User	*command_user(std::string buffer, std::vector<std::string> out, User *user)
+{
+	set_name(out[2]);
+	return (user);
 }

@@ -127,16 +127,18 @@ int		main(int argc , char *argv[])
 				{
 					client_socket[i] = new_socket;
 					// printf("Adding to list of sockets as %d\n" , i);
-					char c;
-					valread = 0;
-					while (read(client_socket[i], &c, 1) > 0 && c != EOF && c != '\n')
-					{
-						buffer[valread] = c;
-						valread++;
-					}
-					buffer[valread] = '\0';
-					std::cout << "\t 1ere cmd recu = " << buffer << std::endl;
-					dispatch_cmd(buffer);
+					//Lire la première commande
+					//Pas utile car on met tout dans dispatch cmd
+					// char c;
+					// valread = 0;
+					// while (read(client_socket[i], &c, 1) > 0 && c != EOF && c != '\n')
+					// {
+					// 	buffer[valread] = c;
+					// 	valread++;
+					// }
+					// buffer[valread] = '\0';
+					// std::cout << "\t 1ere cmd recu = " << buffer << std::endl;
+					// dispatch_cmd(buffer);
 					break;
 				}
 			}
