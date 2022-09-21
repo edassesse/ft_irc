@@ -1,30 +1,16 @@
-#include "../include/Command.hpp"
-#include "../include/User.hpp"
- 
-void split(std::string const &str, const char* delim, std::vector<std::string> &out)
-{
-    char *token = strtok(const_cast<char*>(str.c_str()), delim);
-    while (token != nullptr)
-    {
-        out.push_back(std::string(token));
-        token = strtok(nullptr, delim);
-    }
-}
+#include "../include/Server.hpp"
 
-void	dispatch_cmd(std::string buffer)
+void	dispatch_cmd(std::string buffer, User *user)
 {
     std::vector<std::string>	out;
-    std::string					s = buffer;
-	std::string					cmd_name[3] = {"NICK", "USER", "CAP"};
-    const char*					delim = " ";
+	std::string					cmd_name[5] = {"NICK", "USER", "CAP", "JOIN", "PRIVMSG"};
 	int							i;
-	User						*user;
 
-    split(s, delim, out);
+	out = split_vector(buffer, " \r\n");
 	std::cout << "Commande Split :" << std::endl;
 	for (std::vector<std::string>::iterator it = out.begin(); it != out.end(); ++it)
-		std::cout << *it << std::endl;
-	for (i = 0; i < 2; i++)
+		std::cout << "|" << *it << "|" << std::endl;
+	for (i = 0; i < 5; i++)
 	{
 		if (cmd_name[i] == out[0])
 			break ;
@@ -33,36 +19,63 @@ void	dispatch_cmd(std::string buffer)
 	{
 		case CAP :
 			std::cout << "Cap switch" << std::endl;
-			user = command_cap(buffer, out);
+			command_cap(buffer, out);
+			user->answer = CAP;
 			break;
 		case NICK :
 			std::cout << "Nick switch" << std::endl;
-			command_nick(buffer, out);
+			command_nick(buffer, out, user);
+			user->answer = NICK;
 			break;
 		case USER :
 			std::cout << "User switch" << std::endl;
-			command_user(buffer, out);
+			command_user(buffer, out, user);
+			user->answer = USER; 
+			break;
+		case JOIN :
+			std::cout << "Join switch" << std::endl;
+			command_join(buffer, out, user);
+			user->answer = JOIN;
+			break;
+		case PRIVMSG :
+			std::cout << "Privmsg switch" << std::endl;
+			command_privmsg(buffer, out, user);
+			user->answer = PRIVMSG;
 			break;
 		default :
 			std::cout << "Unknow command" << std::endl;
 	}
+	if (user->get_name().size() != 0 && !user->wlcm_send)
+	{
+		user->answer = ":irc.example.com 001 " + user->get_nickname() + " : Welcome to the Internet Relay Network " + user->get_nickname() + "!" + user->get_nickname() + "@irc.example.com" + ENDLINE;
+		user->wlcm_send = 1;
+	}
 }
 
-User	*command_cap(std::string buffer, std::vector<std::string> out)
+void	command_cap(std::string buffer, std::vector<std::string> out)
 {
-	User	*user;
-
-	return (user);
+	std::cout << "command CAP" << std::endl;
 }
 
-User	*command_nick(std::string buffer, std::vector<std::string> out, User *user)
+void	command_nick(std::string buffer, std::vector<std::string> out, User *user)
 {
-	set_nickname(out[2]);
-	return (user);
+	std::cout << "command Nick" << std::endl;
+	//if (check_nickname() == 1)
+		user->set_nickname(out[1]);
 }
 
-User	*command_user(std::string buffer, std::vector<std::string> out, User *user)
+void	command_user(std::string buffer, std::vector<std::string> out, User *user)
 {
-	set_name(out[2]);
-	return (user);
+	std::cout << "command User" << std::endl;
+	user->set_name(out[1]);
+}
+
+void	command_join(std::string buffer, std::vector<std::string> out, User *user)
+{
+	std::cout << "command Join" << std::endl;
+}
+
+void	command_privmsg(std::string buffer, std::vector<std::string> out, User *user)
+{
+	std::cout << "command Privmsg" << std::endl;
 }

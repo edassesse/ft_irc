@@ -1,17 +1,4 @@
-#include <stdio.h> 
-#include <string.h>   //strlen 
-#include <stdlib.h> 
-#include <errno.h> 
-#include <unistd.h>   //close 
-#include <arpa/inet.h>    //close 
-#include <sys/types.h> 
-#include <sys/socket.h> 
-#include <netinet/in.h> 
-#include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros 
-#include "Command.cpp"
-#include "User.cpp"
-#include "Message.cpp"
-#include "Channel.cpp"
+#include "../include/Server.hpp"
 
 #define TRUE   1 
 #define FALSE  0 
@@ -23,6 +10,7 @@ int		main(int argc , char *argv[])
 	int		master_socket , addrlen , new_socket , client_socket[30] , 	max_clients = 30 , activity, i , valread , sd;  
 	int		max_sd;
 	struct sockaddr_in address;
+	User	*user = new User();
 
 	char buffer[1025];  //data buffer of 1K 
 
@@ -45,7 +33,6 @@ int		main(int argc , char *argv[])
 		exit(EXIT_FAILURE);  
 	}
 
-	printf("%d\n", SOCK_STREAM);
 	//set master socket to allow multiple connections , 
 	//this is just a good habit, it will work without this 
 	if(setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) < 0 )
@@ -65,7 +52,7 @@ int		main(int argc , char *argv[])
 		perror("bind failed");  
 		exit(EXIT_FAILURE);  
 	}  
-	printf("Listener on port %d \n", PORT);  
+	std::cout << "Listener on port " << PORT << std::endl;
 
 	//try to specify maximum of 3 pending connections for the master socket 
 	if (listen(master_socket, 3) < 0)  
@@ -103,7 +90,7 @@ int		main(int argc , char *argv[])
 		//so wait indefinitely 
 		activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);  
 		if ((activity < 0) && (errno!=EINTR))  
-			printf("select error");  
+				std::cout << "Select ERROR" << std::endl;  
 		//If something happened on the master socket , 
 		//then its an incoming connection 
 		if (FD_ISSET(master_socket, &readfds))  
@@ -114,7 +101,7 @@ int		main(int argc , char *argv[])
 				exit(EXIT_FAILURE);  
 			}  
 			//inform user of socket number - used in send and receive commands 
-			printf("New connection , socket fd is %d , ip is : %s , port : %d\n" , new_socket , inet_ntoa(address.sin_addr) , ntohs (address.sin_port));  
+			std::cout << "New connection , socket fd is " << new_socket << " , ip is : " << inet_ntoa(address.sin_addr) << " , port : " << ntohs(address.sin_port) << std::endl;
 			//send new connection greeting message 
 			if( send(new_socket, message, strlen(message), 0) != strlen(message) )  
 				perror("send");
@@ -143,7 +130,6 @@ int		main(int argc , char *argv[])
 				}
 			}
 		}
-		std::cout << "ouiouioui" << std::endl;
 		//else its some IO operation on some other socket
 		for (i = 0; i < max_clients; i++)  
 		{
@@ -163,7 +149,7 @@ int		main(int argc , char *argv[])
 				{
 					//Somebody disconnected , get his details and print 
 					getpeername(sd , (struct sockaddr*)&address , (socklen_t*)&addrlen);
-					printf("Host disconnected , ip %s , port %d \n" , inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
+					std::cout << "Host disconnected , ip " << inet_ntoa(address.sin_addr) << " , port " << ntohs(address.sin_port) << std::endl;
 					close(sd);
 					client_socket[i] = 0;
 				}
@@ -172,9 +158,11 @@ int		main(int argc , char *argv[])
 				{
 					buffer[valread] = '\0';
 					std::cout << "\t recu = " << buffer << std::endl;
-					dispatch_cmd(buffer);
-					char *mess = "Message SEEEEEEND\n";
-					send(sd , mess , strlen(mess) , 0 );  
+					std::string	mess;
+					dispatch_cmd(buffer, user);
+					std::cout << "\tSend = |" << user->answer << "|" << std::endl;
+					send(sd , user->answer.c_str() , user->answer.size() , 0 );
+					user->answer = "";
 				}
 			}
 		}
