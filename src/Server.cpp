@@ -4,6 +4,26 @@
 #define FALSE  0 
 #define PORT 8888 
 
+Server::Server(void)
+{
+	std::cout << "Constructor Server by default called" << std::endl;
+}
+
+Server::~Server(void)
+{
+	std::cout << "Destructor Server called" << std::endl;
+}
+
+void		Server::set_address(std::string addr)
+{
+	_address = addr;
+}
+
+std::string		Server::get_address()
+{
+	return (_address);
+}		
+
 int		main(int argc , char *argv[])
 {
 	int		opt = TRUE;  
@@ -11,88 +31,56 @@ int		main(int argc , char *argv[])
 	int		max_sd;
 	struct sockaddr_in address;
 	User	*user = new User();
+	Server	*server = new Server();
+	char buffer[1025];
+	fd_set readfds;
+	// char *message = ":bar.example.com 001 amy : Welcome to the Internet Relay Network amy!amy@foo.example.com\r\n";
 
-	char buffer[1025];  //data buffer of 1K 
-
-	//set of socket descriptors 
-	fd_set readfds;  
-
-	//a message 
-	char *message = ":bar.example.com 001 amy : Welcome to the Internet Relay Network amy!amy@foo.example.com\r\n";  
-
-	//initialise all client_socket[] to 0 so not checked 
 	for (i = 0; i < max_clients; i++)  
-	{
 		client_socket[i] = 0;  
-	}
-
-	//create a master socket 
 	if((master_socket = socket(AF_INET , SOCK_STREAM , 0)) == 0)  
 	{  
 		perror("socket failed");  
 		exit(EXIT_FAILURE);  
 	}
-
-	//set master socket to allow multiple connections , 
-	//this is just a good habit, it will work without this 
 	if(setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) < 0 )
 	{
 		perror("setsockopt");
 		exit(EXIT_FAILURE);
 	}
-
-	//type of socket created 
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons( PORT );
-
-	//bind the socket to localhost port 8888 
 	if (bind(master_socket, (struct sockaddr *)&address, sizeof(address))<0)  
 	{  
 		perror("bind failed");  
 		exit(EXIT_FAILURE);  
 	}  
 	std::cout << "Listener on port " << PORT << std::endl;
-
-	//try to specify maximum of 3 pending connections for the master socket 
 	if (listen(master_socket, 3) < 0)  
 	{  
 		perror("listen");  
 		exit(EXIT_FAILURE);  
-	}  
-
-	//accept the incoming connection 
+	}
 	addrlen = sizeof(address);  
 	puts("Waiting for connections ...");  
 	std::cout << "DEBUT BOUCLE WHILE TRUE" << std::endl;
 	while(TRUE)  
-	{  
-		//clear the socket set 
+	{
 		FD_ZERO(&readfds);
-		//add master socket to set 
 		FD_SET(master_socket, &readfds);  
-		max_sd = master_socket;  
-		//add child sockets to set 
+		max_sd = master_socket;
 		for ( i = 0 ; i < max_clients ; i++)  
-		{  
-			//socket descriptor 
-			sd = client_socket[i];  
-
-			//if valid socket descriptor then add to read list 
+		{
+			sd = client_socket[i];
 			if(sd > 0)  
-				FD_SET( sd , &readfds);  
-
-			//highest file descriptor number, need it for the select function 
+				FD_SET( sd , &readfds);
 			if(sd > max_sd)  
 				max_sd = sd;  
-		}  
-		//wait for an activity on one of the sockets , timeout is NULL , 
-		//so wait indefinitely 
+		}
 		activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);  
 		if ((activity < 0) && (errno!=EINTR))  
-				std::cout << "Select ERROR" << std::endl;  
-		//If something happened on the master socket , 
-		//then its an incoming connection 
+				std::cout << "Select ERROR" << std::endl;
 		if (FD_ISSET(master_socket, &readfds))  
 		{  
 			if ((new_socket = accept(master_socket, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)  
@@ -103,29 +91,14 @@ int		main(int argc , char *argv[])
 			//inform user of socket number - used in send and receive commands 
 			std::cout << "New connection , socket fd is " << new_socket << " , ip is : " << inet_ntoa(address.sin_addr) << " , port : " << ntohs(address.sin_port) << std::endl;
 			//send new connection greeting message 
-			if( send(new_socket, message, strlen(message), 0) != strlen(message) )  
-				perror("send");
-			puts("Welcome message sent successfully");
-			//add new socket to array of sockets 
+			// if( send(new_socket, message, strlen(message), 0) != strlen(message) )  
+			// 	perror("send");
 			for (i = 0; i < max_clients; i++)
 			{
 				//if position is empty 
 				if( client_socket[i] == 0 )
 				{
 					client_socket[i] = new_socket;
-					// printf("Adding to list of sockets as %d\n" , i);
-					//Lire la première commande
-					//Pas utile car on met tout dans dispatch cmd
-					// char c;
-					// valread = 0;
-					// while (read(client_socket[i], &c, 1) > 0 && c != EOF && c != '\n')
-					// {
-					// 	buffer[valread] = c;
-					// 	valread++;
-					// }
-					// buffer[valread] = '\0';
-					// std::cout << "\t 1ere cmd recu = " << buffer << std::endl;
-					// dispatch_cmd(buffer);
 					break;
 				}
 			}
@@ -136,8 +109,6 @@ int		main(int argc , char *argv[])
 			sd = client_socket[i];
 			if (FD_ISSET( sd , &readfds))
 			{
-				//Check if it was for closing , and also read the 
-				//incoming message 
 				char c;
 				valread = 0;
 				while (read(sd, &c, 1) > 0 && c != EOF && c != '\n')
@@ -147,25 +118,26 @@ int		main(int argc , char *argv[])
 				}
 				if (valread == 0)
 				{
-					//Somebody disconnected , get his details and print 
 					getpeername(sd , (struct sockaddr*)&address , (socklen_t*)&addrlen);
 					std::cout << "Host disconnected , ip " << inet_ntoa(address.sin_addr) << " , port " << ntohs(address.sin_port) << std::endl;
 					close(sd);
 					client_socket[i] = 0;
 				}
-				//Echo back the message that came in 
 				else
 				{
 					buffer[valread] = '\0';
 					std::cout << "\t recu = " << buffer << std::endl;
 					std::string	mess;
-					dispatch_cmd(buffer, user);
-					std::cout << "\tSend = |" << user->answer << "|" << std::endl;
-					send(sd , user->answer.c_str() , user->answer.size() , 0 );
+					server->set_address(inet_ntoa(address.sin_addr));
+					dispatch_cmd(buffer, user, server);
+					std::cout << "\tSend = |" << user->answer.c_str() << "|" << std::endl;
+					// std::cout << "\tSend = |" << message << "|" << std::endl;
+					if (user->answer != "")
+						send(sd , (user->answer + "\r\n").c_str() , (user->answer + "\r\n").length() , 0);
 					user->answer = "";
 				}
 			}
 		}
 	}
-	return 0;  
+	return 0;
 }  

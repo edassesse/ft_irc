@@ -2,10 +2,11 @@
 
 User::User(void) : wlcm_send(0)
 {
+	answer = "";
 	std::cout << "Constructor User by default called" << std::endl;
 }
 
-User::User(User &cpy) : wlcm_send(0)
+User::User(User const &cpy) : wlcm_send(0)
 {
 	*this = cpy;
 }
