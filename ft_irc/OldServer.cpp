@@ -1,5 +1,4 @@
-#include "Irc.h"
-
+#include "Server.hpp"
 
 void	Server::initServer(Server *server, int ac, char **av)
 { 
@@ -22,8 +21,8 @@ void	Server::initServer(Server *server, int ac, char **av)
 	{
 		if (!isdigit(port[i]))
 		{
-			std::cerr << "Error: Wrong port" << std::endl;
-			exit(EXIT_FAILURE);
+			std::cout << "Error: Wrong port" << std::endl;
+			exit(0);
 		}
 	}
 	server->_pw = pw;
@@ -36,9 +35,7 @@ void	Server::initServer(Server *server, int ac, char **av)
 
 void	Server::startServer(Server *server)
 {
-	int	opt = 1;
-
-	if ((server->_masterSocket = socket(PF_INET, SOCK_STREAM, 0)) == 0)
+	if ((server->_masterSocket = socket(AF_INET, SOCK_STREAM, 0)) == 0)
 	{
 		std::cerr << "socket failed" << std::endl;
 		exit(EXIT_FAILURE);
@@ -54,23 +51,20 @@ void	Server::startServer(Server *server)
 		exit(EXIT_FAILURE);
 	}
 	server->_addrlen = sizeof(server->_address);
-	std::cout << "Waiting for connections ... " << std::endl;
-	if (setsockopt(server->_masterSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof opt))
-	{
-		std::cerr << "setsockopt failed" << std::endl;
-		exit(EXIT_FAILURE);
-	}
+	std::cout << "Waiting for connections ..." << std::endl;
+	std::cout << "Addrlen = " << server->_addrlen << std::endl;
+	std::cout << "PW = " << server->_pw << std::endl;
+	std::cout << "Port = " << server->_port << std::endl;
 }
 
 void	Server::run(Server *server)
 {
-	struct	sockaddr	*newClient;
-	int					events;
-	while (TRUE)
+	while (TRUE) 
 	{
-		events = 0;
-		/* new_socket = accept(server->_masterSocket, newClient, sizeof server->_address); */
-		accept(server->_masterSocket, newClient, sizeof server->_address);
-		events = poll(VECTOR OF USERS, AMOUNT OF USERS, -1);
+		FD_ZERO(&server->_readfds);
+		FD_SET(server->_mastersocket, &server->_readfds);
+		server->_maxSd = server->_mastersocket;
+		/* AJOUT CLIENT, SOCKET, CMD CAP */
+
 	}
 }

@@ -40,8 +40,6 @@ int main(int argc , char *argv[])
 		perror("socket failed");  
 		exit(EXIT_FAILURE);  
 	}  
-
-	printf("%d\n", SOCK_STREAM);
 	//set master socket to allow multiple connections , 
 	//this is just a good habit, it will work without this 
 	if( setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, 
@@ -52,9 +50,9 @@ int main(int argc , char *argv[])
 	}  
 
 	//type of socket created 
-	address.sin_family = AF_INET;  
-	address.sin_addr.s_addr = INADDR_ANY;  
-	address.sin_port = htons( PORT );  
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = INADDR_ANY;
+	address.sin_port = htons( PORT );
 
 	//bind the socket to localhost port 8888 
 	if (bind(master_socket, (struct sockaddr *)&address, sizeof(address))<0)  

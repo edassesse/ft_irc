@@ -1,8 +1,14 @@
 #ifndef IRC_H
 # define IRC_H
 
-# include "server.hpp"
+# include "Server.hpp"
+# include <sys/socket.h> 
+# include <iostream>
+# include <sys/types.h>
+# include <sys/socket.h> 
+# include <netinet/in.h>
 
-void	checkParams(Server *server, int ac, char **av);
+# define TRUE	1
+# define FALSE	0
 
 #endif
