@@ -45,7 +45,6 @@ void	dispatch_cmd(std::string buffer, Server *server)
 		case PART :
 			std::cout << "Part switch" << std::endl;
 			command.command_part(out, user, server);
-			user->answer = "";
 			break;
 		default :
 			std::cout << "Unknow command" << std::endl;
@@ -72,15 +71,17 @@ void	print_infos(Server *server, User *user)
 {
 	std::cout << "\n-------Print Data-------" << std::endl;
 	std::cout << "Channels" << std::endl;
-	if (server->_channels)
+	if (server->_channels->size() != 0)
 	{
 		for (std::vector<Channel>::iterator it = server->_channels->begin(); it != server->_channels->end(); it++)
-			std::cout << "\t" << it->get_name() << std::endl;
-		if (!server->_channels->data()->_users->empty())
 		{
-			std::cout << "\t\tUser in channel" << std::endl;
-			for (std::vector<User>::iterator it = server->_channels->data()->_users->begin(); it != server->_channels->data()->_users->end(); it++)
-				std::cout << "\t\t\t" << it->get_name() << std::endl;
+			std::cout << "\t" << it->get_name() << std::endl;
+			if (!server->_channels->data()->_users->empty())
+			{
+				std::cout << "\t\tUser in channel" << std::endl;
+				for (std::vector<User>::iterator it = server->_channels->data()->_users->begin(); it != server->_channels->data()->_users->end(); it++)
+					std::cout << "\t\t\t" << it->get_name() << std::endl;
+			}
 		}
 	}
 	else
@@ -178,17 +179,34 @@ void	Command::command_privmsg(std::vector<std::string> out, User *user)
 
 Channel	*find_channel(Server *server, std::vector<std::string> out, std::string channel_name)
 {
-	// std::cout << "Find channel" << std::endl;
-	// std::cout << "out 1 = " << out[1] << std::endl;
 	size_t		size;
 
 	if (!server->_channels)
 		return (NULL);
+	size = server->_channels->size();
 	for (size_t i = 0; i < size; i++)
 	{
 		if (channel_name == server->_channels[i].data()->get_name())
 			return (server->_channels[i].data());
 	}
+}
+
+void	remove_user_of_channel(Channel *channel, User *user)
+{
+	int		i = 0;
+	//supprimer le channel dans user
+	for (std::vector<Channel>::iterator ite = user->_channels->begin(); ite != user->_channels->end(); ite++, i++)
+		if (ite->get_name() == channel->get_name())
+			break ;
+	user->_channels->erase(user->_channels->begin() + i);
+	//supprimer le user dans channel
+	i = 0;
+	for (std::vector<User>::iterator ite = channel->_users->begin(); ite != channel->_users->end(); ite++, i++)
+		if (ite->get_name() == user->get_name())
+			break ;
+	channel->_users->erase(channel->_users->begin() + i);
+	//supprimer le channel si 0 users
+	
 }
 
 void	Command::command_part(std::vector<std::string> out, User *user, Server *server)
@@ -202,13 +220,13 @@ void	Command::command_part(std::vector<std::string> out, User *user, Server *ser
 		channel_name = out[1].erase(0, 1);
 		if ((channel = find_channel(server, out, channel_name)) == NULL)
 		{
-			//Le channel n'existe pas => Pas de message d'erreurs
+			//Le channel n'existe pas => Pas de message d'erreurs ?
 		}
 		else
 		{
 			//quit le channel qui existe deja
-
-			user->answer = ":" + user->get_nickname() + "!" + user->get_nickname() + "@irc.example.com JOIN #" + channel->get_name();
+			remove_user_of_channel(channel, user);
+			user->answer = ":" + user->get_nickname() + "!" + user->get_name() + "@server PART #" + channel->get_name();
 		}
 	}
 	else

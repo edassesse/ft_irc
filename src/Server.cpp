@@ -148,9 +148,8 @@ User	*Server::init_data(Server *server)
 {
 	std::cout << "Init server" << std::endl;
 	server->_users = new std::vector<User>;
-	std::cout << "1 server" << std::endl;
+	server->_channels = new std::vector<Channel>;
 	User		*user = new User;
-	std::cout << "2 server" << std::endl;
 	server->_users->push_back(*user);
 	std::cout << "Fin Init server" << std::endl;
 }
