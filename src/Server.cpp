@@ -35,7 +35,6 @@ int		main(int argc , char *argv[])
 	char buffer[1025];
 	fd_set readfds;
 	// char *message = ":bar.example.com 001 amy : Welcome to the Internet Relay Network amy!amy@foo.example.com\r\n";
-
 	for (i = 0; i < max_clients; i++)  
 		client_socket[i] = 0;  
 	if((master_socket = socket(AF_INET , SOCK_STREAM , 0)) == 0)  
