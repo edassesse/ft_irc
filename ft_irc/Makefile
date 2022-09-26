@@ -1,7 +1,7 @@
 NAME		= ircserv
 OBJS		= $(SRCS:.cpp=.o)
-HEADER		= server.hpp Irc.h
-SRCS		= main.cpp Parsing.cpp
+HEADER		= Server.hpp Irc.h Server.hpp
+SRCS		= Main.cpp Server.cpp
 RM			= rm -f
 CC			= clang++
 CFLAGS		= -Wall -Werror -Wextra

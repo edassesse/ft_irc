@@ -1,9 +1,10 @@
-#include "server.hpp"
-#include "Irc.h"
+#include "Server.hpp"
 
 int main(int ac, char **av)
 {
 	Server	*server = new Server();
 
-	checkParams(server, ac, av);
+	server->initServer(server, ac, av);
+	server->startServer(server);
+	server->run(server);
 }
