@@ -19,8 +19,28 @@
 
 #define ENDLINE "\r\n"
 
-void						split(std::string const &str, const char* delim, std::vector<std::string> &out);
+class Server
+{
+   public:
+
+		Server();
+		~Server();
+		std::vector<Channel>	*_channels;
+		std::vector<User>   	*_users;
+		std::string				get_address();
+		void					set_address(std::string addr);
+		User					*init_data(Server *server);
+
+	private :
+
+		std::string				_address;
+};
+
 std::vector<std::string>	split_vector(std::string s, std::string delimiter);
-void						dispatch_cmd(std::string buffer, User *user);
+void						dispatch_cmd(std::string buffer, Server *server);
+Channel						*find_channel(Server *server, std::vector<std::string> out, std::string channel_name);
+void						add_channel_in_user(Channel *channel, User *user);
+bool						check_nickname(std::string nickname, Server *server);
+void						print_infos(Server *server, User *user);
 
 #endif

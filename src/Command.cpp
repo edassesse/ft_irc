@@ -1,16 +1,19 @@
 #include "../include/Server.hpp"
 
-void	dispatch_cmd(std::string buffer, User *user, Server *server)
+void	dispatch_cmd(std::string buffer, Server *server)
 {
 	std::vector<std::string>	out;
-	std::string					cmd_name[5] = {"NICK", "USER", "CAP", "JOIN", "PRIVMSG"};
+	std::string					cmd_name[6] = {"NICK", "USER", "CAP", "JOIN", "PRIVMSG", "PART"};
 	int							i;
+	Command						command;
+	User						*user;
 
 	out = split_vector(buffer, " \r\n");
+	user = server->_users->data();
 	std::cout << "Commande Split :" << std::endl;
 	for (std::vector<std::string>::iterator it = out.begin(); it != out.end(); ++it)
 		std::cout << "|" << *it << "|" << std::endl;
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < 6; i++)
 	{
 		if (cmd_name[i] == out[0])
 			break ;
@@ -19,26 +22,29 @@ void	dispatch_cmd(std::string buffer, User *user, Server *server)
 	{
 		case CAP :
 			std::cout << "Cap switch" << std::endl;
-			command_cap(buffer, out);
+			command.command_cap(out);
 			user->answer = "";
 			break;
 		case NICK :
 			std::cout << "Nick switch" << std::endl;
-			command_nick(buffer, out, user);
-			user->answer = "";
+			command.command_nick(out, user, server);
 			break;
 		case USER :
 			std::cout << "User switch" << std::endl;
-			command_user(buffer, out, user);
+			command.command_user(out, server);
 			user->answer = ""; 
 			break;
 		case JOIN :
 			std::cout << "Join switch" << std::endl;
-			command_join(buffer, out, user, server);
+			command.command_join(out, user, server);
 			break;
 		case PRIVMSG :
 			std::cout << "Privmsg switch" << std::endl;
-			command_privmsg(buffer, out, user);
+			command.command_privmsg(out, user);
+			break;
+		case PART :
+			std::cout << "Part switch" << std::endl;
+			command.command_part(out, user, server);
 			user->answer = "";
 			break;
 		default :
@@ -49,27 +55,84 @@ void	dispatch_cmd(std::string buffer, User *user, Server *server)
 		user->answer = ":server 001 " + user->get_nickname() + " :Welcome to the Internet Relay Network " + user->get_nickname() + "!" + user->get_name() + "@" + server->get_address();
 		user->wlcm_send = 1;
 	}
+	print_infos(server, user);
 }
 
-void	command_cap(std::string buffer, std::vector<std::string> out)
+Command::Command(void)
+{
+	std::cout << "Constructor Command by default called" << std::endl;
+}
+
+Command::~Command(void)
+{
+	std::cout << "Destructor Command called" << std::endl;
+}
+
+void	print_infos(Server *server, User *user)
+{
+	std::cout << "\n-------Print Data-------" << std::endl;
+	std::cout << "Channels" << std::endl;
+	if (server->_channels)
+	{
+		for (std::vector<Channel>::iterator it = server->_channels->begin(); it != server->_channels->end(); it++)
+			std::cout << "\t" << it->get_name() << std::endl;
+		if (!server->_channels->data()->_users->empty())
+		{
+			std::cout << "\t\tUser in channel" << std::endl;
+			for (std::vector<User>::iterator it = server->_channels->data()->_users->begin(); it != server->_channels->data()->_users->end(); it++)
+				std::cout << "\t\t\t" << it->get_name() << std::endl;
+		}
+	}
+	else
+		std::cout << "\tNo Channels" << std::endl;
+	std::cout << "Users" << std::endl;
+	if (server->_users)
+	{
+		for (std::vector<User>::iterator it = server->_users->begin(); it != server->_users->end(); it++)
+		{
+			std::cout << "\t" << it->get_name() << std::endl;
+			if (it->get_nb_channel() != 0)
+			{
+				std::cout << "\t\tChannel in user" << std::endl;
+				for (std::vector<Channel>::iterator ite = it->_channels->begin(); ite != it->_channels->end(); ite++)
+					std::cout << "\t\t\t" << ite->get_name() << std::endl;
+			}
+		}
+	}
+	std::cout << "-------End Print-------\n" << std::endl;
+}
+
+void	Command::command_cap(std::vector<std::string> out)
 {
 	std::cout << "command CAP" << std::endl;
 }
 
-void	command_nick(std::string buffer, std::vector<std::string> out, User *user)
+void	Command::command_nick(std::vector<std::string> out, User *user, Server *server)
 {
+	std::string		old_nick;
 	std::cout << "command Nick" << std::endl;
-	//if (check_nickname() == 1)
+	old_nick = user->get_nickname();
+	if (check_nickname(out[1], server))
 		user->set_nickname(out[1]);
+	if (user->wlcm_send == true)
+		user->answer = ":" + old_nick + "!" + user->get_name() + "@server NICK " + user->get_nickname();
 }
 
-void	command_user(std::string buffer, std::vector<std::string> out, User *user)
+bool	check_nickname(std::string nickname, Server *server)
+{
+	for (std::vector<User>::iterator it = server->_users->begin(); it != server->_users->end(); it++)
+		if (it->get_nickname() == nickname)
+			return (false);
+	return (true);
+}
+
+void	Command::command_user(std::vector<std::string> out, Server *server)
 {
 	std::cout << "command User" << std::endl;
-	user->set_name(out[1]);
+	server->_users->data()->set_name(out[1]);
 }
 
-void	command_join(std::string buffer, std::vector<std::string> out, User *user, Server *server)
+void	Command::command_join(std::vector<std::string> out, User *user, Server *server)
 {
 	std::cout << "command Join" << std::endl;
 	Channel		*channel;
@@ -78,24 +141,19 @@ void	command_join(std::string buffer, std::vector<std::string> out, User *user, 
 	if (out[1][0] == '#')
 	{
 		channel_name = out[1].erase(0, 1);
-		if ((channel = find_channel(server, out)) == NULL)
+		if ((channel = find_channel(server, out, channel_name)) == NULL)
 		{
-			//creer le channel correspondant
-			std::cout << "Push Back Channel car existe pas" << std::endl;
-			if (!user->_channels)
-				user->_channels = new std::vector<Channel>;
+			//creer le channel si il existe pas correspondant
 			channel = new Channel(user, channel_name);
+			//add channel in server
 			if (!server->_channels)
 				server->_channels = new std::vector<Channel>;
-			user->_channels->push_back(*channel);
 			server->_channels->push_back(*channel);
-			//user->answer = out[0] + " " + out[1];
-			user->answer = user->get_nickname() + "!" + user->get_nickname() + "@irc.example.com JOIN #" + channel->get_name();
+			print_infos(server, user);
 		}
-		else
-		{
-			//join le channel qui existe deja avec channel
-		}
+		//join le channel
+		add_channel_in_user(channel, user);
+		user->answer = ":" + user->get_nickname() + "!" + user->get_nickname() + "@irc.example.com JOIN #" + channel->get_name();
 	}
 	else
 	{
@@ -103,18 +161,58 @@ void	command_join(std::string buffer, std::vector<std::string> out, User *user, 
 	}
 }
 
-void	command_privmsg(std::string buffer, std::vector<std::string> out, User *user)
+void	add_channel_in_user(Channel *channel, User *user)
 {
-	std::cout << "command Privmsg" << std::endl;
+	//add channel in user
+	if (!user->_channels)
+		user->_channels = new std::vector<Channel>;
+	user->_channels->push_back(*channel);
+	user->set_nb_channel(user->get_nb_channel() + 1);
 }
 
-Channel	*find_channel(Server *server, std::vector<std::string> out)
+void	Command::command_privmsg(std::vector<std::string> out, User *user)
 {
-	std::cout << "Find channel" << std::endl;
-	std::cout << "out 1 = " << out[1] << std::endl;
+	std::cout << "command Privmsg" << std::endl;
+	user->answer = ":" + user->get_nickname() + "!" + user->get_name() + "@server PRIVMSG #coucou :bonjour a tous";
+}
+
+Channel	*find_channel(Server *server, std::vector<std::string> out, std::string channel_name)
+{
+	// std::cout << "Find channel" << std::endl;
+	// std::cout << "out 1 = " << out[1] << std::endl;
+	size_t		size;
+
 	if (!server->_channels)
 		return (NULL);
-	// for (std::vector<Channel>::iterator it = server->_channels.begin(); it != server->_channels.end(); ++it)
-	//     if ()
-	std::cout << "FIN" <<std::endl;
+	for (size_t i = 0; i < size; i++)
+	{
+		if (channel_name == server->_channels[i].data()->get_name())
+			return (server->_channels[i].data());
+	}
+}
+
+void	Command::command_part(std::vector<std::string> out, User *user, Server *server)
+{
+	std::cout << "command Part" << std::endl;
+	Channel		*channel;
+	std::string	channel_name;
+
+	if (out[1][0] == '#')
+	{
+		channel_name = out[1].erase(0, 1);
+		if ((channel = find_channel(server, out, channel_name)) == NULL)
+		{
+			//Le channel n'existe pas => Pas de message d'erreurs
+		}
+		else
+		{
+			//quit le channel qui existe deja
+
+			user->answer = ":" + user->get_nickname() + "!" + user->get_nickname() + "@irc.example.com JOIN #" + channel->get_name();
+		}
+	}
+	else
+	{
+		user->answer = out[1] + " No such channel" + ENDLINE;
+	}
 }

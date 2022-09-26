@@ -5,19 +5,33 @@
 #include <iostream>
 #include <vector>
 
-enum	Command  
+class Server;
+
+enum	Command_lst
 {
 	NICK,
 	USER,
 	CAP,
 	JOIN,
-	PRIVMSG
+	PRIVMSG,
+	PART
 };
 
-void	command_cap(std::string buffer, std::vector<std::string> out);
-void	command_nick(std::string buffer, std::vector<std::string> out, User *user);
-void	command_user(std::string buffer, std::vector<std::string> out, User *user);
-void	command_join(std::string buffer, std::vector<std::string> out, User *user);
-void	command_privmsg(std::string buffer, std::vector<std::string> out, User *user);
+class Command
+{
+	public:
+
+			Command();
+			~Command();
+	void	command_cap(std::vector<std::string> out);
+	void	command_nick(std::vector<std::string> out, User *user, Server *server);
+	void	command_user(std::vector<std::string> out, Server *server);
+	void	command_join(std::vector<std::string> out, User *user, Server *server);
+	void	command_privmsg(std::vector<std::string> out, User *user);
+	void	command_part(std::vector<std::string> out, User *user, Server *server);
+};
+
+
+#include "Server.hpp"
 
 #endif

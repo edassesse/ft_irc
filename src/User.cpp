@@ -1,6 +1,6 @@
 #include "../include/User.hpp"
 
-User::User(void) : wlcm_send(0)
+User::User(void) : wlcm_send(0), _nb_channel(0)
 {
 	answer = "";
 	std::cout << "Constructor User by default called" << std::endl;
@@ -60,4 +60,15 @@ void			User::set_password(std::string password)
 	// std::cout << "Set Password" << std::endl;
 	if (_password != password)
 		_password = password;
+}
+
+int				User::get_nb_channel()
+{
+	return (_nb_channel);
+}
+
+void			User::set_nb_channel(int nb_channel)
+{
+	if (nb_channel != _nb_channel)
+		_nb_channel = nb_channel;
 }

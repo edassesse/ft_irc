@@ -62,7 +62,8 @@ int		main(int argc , char *argv[])
 		perror("listen");  
 		exit(EXIT_FAILURE);  
 	}
-	addrlen = sizeof(address);  
+	user = server->init_data(server);
+	addrlen = sizeof(address);
 	puts("Waiting for connections ...");  
 	std::cout << "DEBUT BOUCLE WHILE TRUE" << std::endl;
 	while(TRUE)  
@@ -129,7 +130,8 @@ int		main(int argc , char *argv[])
 					std::cout << "\t recu = " << buffer << std::endl;
 					std::string	mess;
 					server->set_address(inet_ntoa(address.sin_addr));
-					dispatch_cmd(buffer, user, server);
+					dispatch_cmd(buffer, server);
+					user = server->_users->data();
 					std::cout << "\tSend = |" << user->answer.c_str() << "|" << std::endl;
 					// std::cout << "\tSend = |" << message << "|" << std::endl;
 					if (user->answer != "")
@@ -141,3 +143,14 @@ int		main(int argc , char *argv[])
 	}
 	return 0;
 }  
+
+User	*Server::init_data(Server *server)
+{
+	std::cout << "Init server" << std::endl;
+	server->_users = new std::vector<User>;
+	std::cout << "1 server" << std::endl;
+	User		*user = new User;
+	std::cout << "2 server" << std::endl;
+	server->_users->push_back(*user);
+	std::cout << "Fin Init server" << std::endl;
+}
