@@ -34,6 +34,7 @@ class	Server {
 		void	startServer(Server *server);
 		void	initServer(Server *server, int ac, char **av);
 		void	run(Server *server);
+		void	addSd(int socket, int events);
 
 	private:
 
@@ -44,7 +45,10 @@ class	Server {
 		int					_addrlen;
 		int					_maxSd;
 		int					_clientAmount;
-		fd_set				_readfds;
+		fd_set						_readFd;
+		std::vector<struct	pollfd>	*_clientSd;
+		std::vector<int>			*_clientFd;
+		std::vector<User>			*_user;
 
 };
 
