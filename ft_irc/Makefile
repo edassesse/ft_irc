@@ -1,10 +1,10 @@
 NAME		= ircserv
 OBJS		= $(SRCS:.cpp=.o)
-HEADER		= Server.hpp Irc.h Server.hpp
-SRCS		= Main.cpp Server.cpp
+HEADER		= include/Command.hpp include/User.hpp include/Server.hpp include/Channel.hpp include/Irc.hpp
+SRCS		= src/Server.cpp src/Command.cpp src/User.cpp src/Utils.cpp src/Channel.cpp src/Main.cpp
 RM			= rm -f
 CC			= clang++
-CFLAGS		= -Wall -Werror -Wextra
+CFLAGS		= #-Wall -Werror -Wextra -std=c++98
 
 all:
 					@$(MAKE) $(NAME)

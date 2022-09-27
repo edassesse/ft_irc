@@ -1,7 +1,10 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-# include "Irc.h"
+# include "Irc.hpp"
+
+class	User;
+class	Channel;
 
 class	Server {
 
@@ -9,7 +12,7 @@ class	Server {
 
 		/* CONSTRUCTOR  DESTRUCTOR */
 
-		Server() : _clientAmount(0)				{};
+		Server() : _clientAmount(1)				{};
 		~Server()								{};
 		
 		 /* SETTER */
@@ -24,7 +27,7 @@ class	Server {
 		
 		std::string	getPw()						{return _pw;};
 		int			getPort()					{return _port;};
-		sockaddr_in	getAddress()				{return _address;};
+		sockaddr_in	getAddress()				{return _sockAddress;};
 		int			getMasterSocket()			{return _masterSocket;};
 		int			getMaxSd()					{return _maxSd;};
 		int			getClientAmount()			{return _clientAmount;};
@@ -34,17 +37,27 @@ class	Server {
 		void	startServer(Server *server);
 		void	initServer(Server *server, int ac, char **av);
 		void	run(Server *server);
+		void	addSd(int socket, int events);
+		void	newUser(Server *server, int newSocket);
+		std::string				get_address()	{return _address;};
+		void					set_address(std::string addr)	{_address = addr;};
+		User					*init_data(Server *server);
+		std::vector<Channel>	*_channels;
+		std::vector<User>   	*_users;
 
 	private:
 
 		std::string			_pw;
 		int					_port;
 		int					_masterSocket;
-		struct	sockaddr_in	_address;
+		struct	sockaddr_in	_sockAddress;
+		std::string			_address;
 		int					_addrlen;
 		int					_maxSd;
 		int					_clientAmount;
-		fd_set				_readfds;
+		fd_set						_readFd;
+		std::vector<struct	pollfd>	_clientSd;
+		std::vector<int>			_clientFd;
 
 };
 
