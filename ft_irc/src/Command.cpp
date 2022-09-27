@@ -231,6 +231,6 @@ void	Command::command_part(std::vector<std::string> out, User *user, Server *ser
 	}
 	else
 	{
-		user->answer = out[1] + " No such channel" + ENDLINE;
+		user->answer = out[1] + " No such channelllll" + ENDLINE;
 	}
 }
