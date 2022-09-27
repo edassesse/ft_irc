@@ -40,7 +40,7 @@ void	dispatch_cmd(std::string buffer, Server *server)
 			break;
 		case PRIVMSG :
 			std::cout << "Privmsg switch" << std::endl;
-			command.command_privmsg(out, user);
+			command.command_privmsg(out, user, server);
 			break;
 		case PART :
 			std::cout << "Part switch" << std::endl;
@@ -58,7 +58,7 @@ void	dispatch_cmd(std::string buffer, Server *server)
 		user->answer = ":server 001 " + user->get_nickname() + " :Welcome to the Internet Relay Network " + user->get_nickname() + "!" + user->get_name() + "@" + server->get_address();
 		user->wlcm_send = 1;
 	}
-	// print_infos(server, user);
+	print_infos(server, user);
 }
 
 Command::Command(void)
@@ -159,7 +159,6 @@ void	Command::command_topic(std::vector<std::string> out, User *user, Server *se
 	}
 }
 
-
 void	Command::command_nick(std::vector<std::string> out, User *user, Server *server)
 {
 	std::string		old_nick;
@@ -226,10 +225,44 @@ void	add_channel_in_user(Channel *channel, User *user)
 	user->set_nb_channel(user->get_nb_channel() + 1);
 }
 
-void	Command::command_privmsg(std::vector<std::string> out, User *user)
+void	Command::send_msg_to_channel_users(std::string msg, User *user, Channel *channel)
+{
+	for (std::vector<User>::iterator it = channel->_users->begin(); it != channel->_users->end(); it++)
+	{
+		//envoyer le message si l'user n'est pas en mode off ??
+		std::cout << "message Send to User :" << it->get_name() << std::endl;
+		it->answer = ":" + user->get_nickname() + "!" + user->get_name() + "@server PRIVMSG #" + channel->get_name() + " " + msg;
+		std::cout << it->answer << std::endl;
+	}
+}
+
+void	Command::command_privmsg(std::vector<std::string> out, User *user, Server *server)
 {
 	std::cout << "command Privmsg" << std::endl;
-	user->answer = ":" + user->get_nickname() + "!" + user->get_name() + "@server PRIVMSG #coucou :bonjour a tous";
+	Channel		*channel;
+	std::string	channel_name;
+
+	//envoie d'un message
+	// user->answer = ":" + user->get_nickname() + "!" + user->get_name() + "@server PRIVMSG #coucou :bonjour a tous";
+	//channel case
+	if (out[1][0] == '#')
+	{
+		channel_name = out[1].erase(0, 1);
+		if ((channel = find_channel(server, out, channel_name)) == NULL)
+		{
+			//Le channel n'existe pas
+			user->answer = out[1] + " No such channel" + ENDLINE;
+		}
+		else
+		{
+			send_msg_to_channel_users(out[2], user, channel);
+		}
+	}
+	//user case
+	else
+	{
+		user->answer = out[1] + " No such channel" + ENDLINE;
+	}
 }
 
 Channel	*find_channel(Server *server, std::vector<std::string> out, std::string channel_name)
@@ -246,7 +279,22 @@ Channel	*find_channel(Server *server, std::vector<std::string> out, std::string 
 	}
 }
 
-void	remove_user_of_channel(Channel *channel, User *user)
+void	delete_channel(Channel *channel, Server *server)
+{
+	std::cout << "delete channel" << std::endl;
+
+	for (size_t i = 0; i < server->_channels->size(); i++)
+	{
+		if (channel->get_name() == server->_channels[i].data()->get_name())
+		{
+			server->_channels->erase(server->_channels->begin() + i);
+			break ;
+		}
+	}
+	delete channel;
+}
+
+void	remove_user_of_channel(Channel *channel, User *user, Server *server)
 {
 	int		i = 0;
 	//supprimer le channel dans user
@@ -261,7 +309,8 @@ void	remove_user_of_channel(Channel *channel, User *user)
 			break ;
 	channel->_users->erase(channel->_users->begin() + i);
 	//supprimer le channel si 0 users
-
+	if (channel->_users->empty())
+		delete_channel(channel, server);
 }
 
 void	Command::command_part(std::vector<std::string> out, User *user, Server *server)
@@ -280,7 +329,7 @@ void	Command::command_part(std::vector<std::string> out, User *user, Server *ser
 		else
 		{
 			//quit le channel qui existe deja
-			remove_user_of_channel(channel, user);
+			remove_user_of_channel(channel, user, server);
 			user->answer = ":" + user->get_nickname() + "!" + user->get_name() + "@server PART #" + channel->get_name();
 		}
 	}

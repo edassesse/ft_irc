@@ -22,7 +22,7 @@ void		Server::set_address(std::string addr)
 std::string		Server::get_address()
 {
 	return (_address);
-}		
+}
 
 int		main(int argc , char *argv[])
 {
@@ -30,8 +30,8 @@ int		main(int argc , char *argv[])
 	int		master_socket , addrlen , new_socket , client_socket[30] , 	max_clients = 30 , activity, i , valread , sd;  
 	int		max_sd;
 	struct sockaddr_in address;
-	User	*user = new User();
-	Server	*server = new Server();
+	User		*user = new User();
+	Server		*server = new Server();
 	char buffer[1025];
 	fd_set readfds;
 	// char *message = ":bar.example.com 001 amy : Welcome to the Internet Relay Network amy!amy@foo.example.com\r\n";
@@ -61,7 +61,7 @@ int		main(int argc , char *argv[])
 		perror("listen");  
 		exit(EXIT_FAILURE);  
 	}
-	user = server->init_data(server);
+	server->init_data(server);
 	addrlen = sizeof(address);
 	puts("Waiting for connections ...");  
 	std::cout << "DEBUT BOUCLE WHILE TRUE" << std::endl;
@@ -136,6 +136,17 @@ int		main(int argc , char *argv[])
 					if (user->answer != "")
 						send(sd , (user->answer + "\r\n").c_str() , (user->answer + "\r\n").length() , 0);
 					user->answer = "";
+					// if (server->_users)
+					// {
+					// 	for (std::vector<User>::iterator it = server->_users->begin(); it != server->_users->end(); it++)
+					// 	{
+					// 		std::cout << "\tSend tu user : " << it->get_name() << std::endl;
+					// 		std::cout << "\t|" << it->answer.c_str() << "|" << std::endl;
+					// 		if (it->answer != "")
+					// 			send(sd , (it->answer + "\r\n").c_str() , (it->answer + "\r\n").length() , 0);
+					// 		it->answer = "";
+					// 	}
+					// }
 				}
 			}
 		}
@@ -143,7 +154,7 @@ int		main(int argc , char *argv[])
 	return 0;
 }  
 
-User	*Server::init_data(Server *server)
+void		Server::init_data(Server *server)
 {
 	std::cout << "Init server" << std::endl;
 	server->_users = new std::vector<User>;
