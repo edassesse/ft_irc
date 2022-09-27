@@ -1,4 +1,4 @@
-#include "Irc.h"
+#include "Irc.hpp"
 
 void	checkParams(Server *server, int ac, char **av)
 {
