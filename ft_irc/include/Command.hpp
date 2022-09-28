@@ -24,7 +24,7 @@ class Command
 			~Command();
 	void	command_cap(std::vector<std::string> out);
 	void	command_nick(std::vector<std::string> out, User *user, Server *server);
-	void	command_user(std::vector<std::string> out, Server *server);
+	void	command_user(std::vector<std::string> out, Server *server, User *user);
 	void	command_join(std::vector<std::string> out, User *user, Server *server);
 	void	command_privmsg(std::vector<std::string> out, User *user, Server *server);
 	void	command_part(std::vector<std::string> out, User *user, Server *server);

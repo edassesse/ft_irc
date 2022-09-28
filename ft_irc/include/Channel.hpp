@@ -10,7 +10,9 @@ class	Channel
 	public:
 
 		Channel();
+		Channel(Channel const &cpy);
 		Channel(User *creator, std::string name);
+		Channel		&operator=(Channel const &cpy);
 		~Channel();
 		std::string				get_name();
 		std::string				get_topic();

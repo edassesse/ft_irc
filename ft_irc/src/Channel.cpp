@@ -3,6 +3,9 @@
 Channel::Channel(void)
 {
 	std::cout << "Constructor Channel by default called" << std::endl;
+	_topic = "";
+	_topic_user = "";
+	_topic_time = "";
 }
 
 Channel::Channel(User *creator, std::string name)
@@ -12,11 +15,33 @@ Channel::Channel(User *creator, std::string name)
 	_name = name;
 	_users = new std::vector<User>;
 	_users->push_back(*creator);
+	_topic = "";
+	_topic_user = "";
+	_topic_time = "";
+}
+
+Channel::Channel(Channel const &cpy)
+{
+	std::cout << "Constructor Channel by copy " << cpy._name <<  " called" << std::endl;
+	*this = cpy;
+}
+
+Channel		&Channel::operator=(Channel const &cpy)
+{
+	std::cout << "Channel operator = called" << std::endl;
+	_operator = cpy._operator;
+	_name = cpy._name;
+	_users = new std::vector<User>;
+	_users = cpy._users;
+	_topic = cpy._topic;
+	_topic_user = cpy._topic_user;
+	_topic_time = cpy._topic_time;
+	return (*this);
 }
 
 Channel::~Channel(void)
 {
-	std::cout << "Destructor Channel called" << std::endl;
+	std::cout << "Destructor Channel " << _name << " called" << std::endl;
 }
 
 std::string				Channel::get_name()
