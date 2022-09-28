@@ -15,6 +15,7 @@ Channel::Channel(User *creator, std::string name)
 	_name = name;
 	_users = new std::vector<User>;
 	_users->push_back(*creator);
+	//mettre le user en operator dans user
 	_topic = "";
 	_topic_user = "";
 	_topic_time = "";

@@ -107,7 +107,6 @@ void	Server::run(Server *server)
 			newSocket = accept(server->_masterSocket, &newClient, &addrSize);
 			std::cout << "New Connection: " << newSocket << std::endl;
 			server->newUser(server, newSocket);
-			std::cout << "PLS rentre pas ||||||" << std::endl;
 			newCo = 1;
 		}
 		for (int i = 1; i < server->_clientAmount && events; i++)
@@ -120,18 +119,20 @@ void	Server::run(Server *server)
 					buffer[valread] = c;
 					valread++;
 				}
-				std::cout << "|||" << c << std::endl;
 				if (valread == 0)
-					std::cerr << "User disconnected" << std::endl; // a changer je sais 
+				{
+					std::cout << "User disconnected" << std::endl; // a changer je sais 
+					exit(0) ;
+				}
 				else
 				{
 					buffer[valread] = 0;
 					std::cout << "Client " << server->_clientFd[i] << " sent:" << buffer << std::endl;
-					dispatch_cmd(buffer,server, server->_users[i - 1].data());
+					dispatch_cmd(buffer,server, &server->_users->at(i - 1));
 				}
 				if (server->_users[i - 1].data()->answer != "")
 				{
-					std::string answer = server->_users[i - 1].data()->answer + ENDLINE;
+					std::string answer = server->_users[i - 1].data()->answer;
 					std::cout << answer.c_str() << std::endl;
 					send(server->_clientFd[i], answer.c_str(), answer.length(), 0);
 					server->_users[i - 1].data()->answer = "";
