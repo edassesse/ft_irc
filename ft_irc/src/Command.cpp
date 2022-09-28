@@ -8,7 +8,7 @@ void	dispatch_cmd(std::string buffer, Server *server, User *user)
 	Command						command;
 
 	out = split_vector(buffer, " \r\n");
-	user = server->_users->data();
+	print_infos(server);
 	std::cout << "Commande Split :" << std::endl;
 	for (std::vector<std::string>::iterator it = out.begin(); it != out.end(); ++it)
 		std::cout << "|" << *it << "|" << std::endl;
@@ -30,7 +30,7 @@ void	dispatch_cmd(std::string buffer, Server *server, User *user)
 			break;
 		case USER :
 			std::cout << "User switch" << std::endl;
-			command.command_user(out, server);
+			command.command_user(out, server, user);
 			user->answer = ""; 
 			break;
 		case JOIN :
@@ -57,7 +57,7 @@ void	dispatch_cmd(std::string buffer, Server *server, User *user)
 		user->answer = ":server 001 " + user->get_nickname() + " :Welcome to the Internet Relay Network " + user->get_nickname() + "!" + user->get_name() + "@" + server->get_address();
 		user->wlcm_send = 1;
 	}
-	print_infos(server, user);
+	print_infos(server);
 }
 
 Command::Command(void)
@@ -70,7 +70,7 @@ Command::~Command(void)
 	std::cout << "Destructor Command called" << std::endl;
 }
 
-void	print_infos(Server *server, User *user)
+void	print_infos(Server *server)
 {
 	std::cout << "\n-------Print Data-------" << std::endl;
 	std::cout << "Channels" << std::endl;
@@ -79,6 +79,7 @@ void	print_infos(Server *server, User *user)
 		for (std::vector<Channel>::iterator it = server->_channels->begin(); it != server->_channels->end(); it++)
 		{
 			std::cout << "\t" << it->get_name() << std::endl;
+			std::cout << "\taddr = " << &it << std::endl;
 			if (!server->_channels->data()->_users->empty())
 			{
 				std::cout << "\t\tUser in channel" << std::endl;
@@ -184,10 +185,10 @@ bool	check_nickname(std::string nickname, Server *server)
 	return (true);
 }
 
-void	Command::command_user(std::vector<std::string> out, Server *server)
+void	Command::command_user(std::vector<std::string> out, Server *server, User *user)
 {
 	std::cout << "command User" << std::endl;
-	server->_users->data()->set_name(out[1]);
+	user->set_name(out[1]);
 }
 
 void	Command::command_join(std::vector<std::string> out, User *user, Server *server)
@@ -203,16 +204,24 @@ void	Command::command_join(std::vector<std::string> out, User *user, Server *ser
 		{
 			//creer le channel si il existe pas correspondant
 			channel = new Channel(user, channel_name);
+			std::cout << &channel << std::endl;
+			std::cout << channel << std::endl;
 			//add channel in server
+			std::cout << "push back name = " << channel->get_name() << std::endl;
 			server->_channels->push_back(*channel);
+			std::cout << "1" << std::endl;
+			// print_infos(server);
 		}
+		std::cout << "2" << std::endl;
 		add_channel_in_user(channel, user);
+		std::cout << "3" << std::endl;
 		user->answer = ":" + user->get_nickname() + "!" + user->get_nickname() + "@server JOIN #" + channel->get_name();
 	}
 	else
 	{
 		user->answer = out[1] + " No such channel" + ENDLINE;
 	}
+	std::cout << "4" << std::endl;
 }
 
 void	add_channel_in_user(Channel *channel, User *user)
@@ -265,15 +274,20 @@ void	Command::command_privmsg(std::vector<std::string> out, User *user, Server *
 Channel	*find_channel(Server *server, std::vector<std::string> out, std::string channel_name)
 {
 	size_t		size;
+	// size_t		i;
 
 	if (!server->_channels)
 		return (NULL);
 	size = server->_channels->size();
+	std::cout << "find channel size = " << size << std::endl;
 	for (size_t i = 0; i < size; i++)
 	{
-		if (channel_name == server->_channels[i].data()->get_name())
-			return (server->_channels[i].data());
+		std::cout << "find channel i = " << i << std::endl;
+		std::cout << "find channel name = " << server->_channels->at(i).get_name() << std::endl;
+		if (channel_name == server->_channels->at(i).get_name())
+			return (&server->_channels->at(i));
 	}
+	return (NULL);
 }
 
 void	delete_channel(Channel *channel, Server *server)
@@ -282,13 +296,15 @@ void	delete_channel(Channel *channel, Server *server)
 
 	for (size_t i = 0; i < server->_channels->size(); i++)
 	{
-		if (channel->get_name() == server->_channels[i].data()->get_name())
+		if (channel->get_name() == server->_channels->at(i).get_name())
 		{
+			// std::cout << "channel name : " << server->_channels->at(i).get_name() << std::endl;
 			server->_channels->erase(server->_channels->begin() + i);
 			break ;
 		}
 	}
-	delete channel;
+	// std::cout << "channel name delete : " << channel->get_name() << std::endl;
+	// delete channel;
 }
 
 void	remove_user_of_channel(Channel *channel, User *user, Server *server)
@@ -322,12 +338,15 @@ void	Command::command_part(std::vector<std::string> out, User *user, Server *ser
 		if ((channel = find_channel(server, out, channel_name)) == NULL)
 		{
 			//Le channel n'existe pas => Pas de message d'erreurs ?
+			std::cout << "No Channel found" << std::endl;
+			user->answer = out[1] + " No such channel" + ENDLINE;
 		}
 		else
 		{
 			//quit le channel qui existe deja
 			remove_user_of_channel(channel, user, server);
 			user->answer = ":" + user->get_nickname() + "!" + user->get_name() + "@server PART #" + channel->get_name();
+			std::cout << "send = " << user->answer << std::endl;
 		}
 	}
 	else
