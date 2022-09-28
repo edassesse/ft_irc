@@ -4,14 +4,14 @@ HEADER		= include/Command.hpp include/User.hpp include/Server.hpp include/Channe
 SRCS		= src/Server.cpp src/Command.cpp src/User.cpp src/Utils.cpp src/Channel.cpp src/Main.cpp
 RM			= rm -f
 CC			= clang++
-CFLAGS		= #-Wall -Werror -Wextra -std=c++98
+CFLAGS		= -Wall -Werror -Wextra -std=c++98
 
 all:
 					@$(MAKE) $(NAME)
 
 $(NAME): $(OBJS) $(HEADER)
 					@printf "$(ERASE)"
-					$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+					$(CC) $(CFLAGS) $(OBJS) -o $(NAME) -fsanitize=address -g3
 					@echo "$(BOLD)$(GREEN)Compilation $(NAME) Succes !$(END)"
 
 clean :

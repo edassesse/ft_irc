@@ -127,7 +127,7 @@ void	Server::run(Server *server)
 				{
 					buffer[valread] = 0;
 					std::cout << "Client " << server->_clientFd[i] << " sent:" << buffer << std::endl;
-					dispatch_cmd(buffer,server);
+					dispatch_cmd(buffer,server, server->_users[i - 1].data());
 				}
 				if (server->_users[i - 1].data()->answer != "")
 				{

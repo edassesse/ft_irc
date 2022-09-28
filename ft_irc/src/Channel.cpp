@@ -24,17 +24,37 @@ std::string				Channel::get_name()
 	return (_name);
 }
 
-std::string				Channel::get_topic()
-{
-	return (_topic);
-}
-
 void					Channel::set_name(std::string name)
 {
 	_name = name;
 }
 
+std::string				Channel::get_topic()
+{
+	return (_topic);
+}
+
 void					Channel::set_topic(std::string topic)
 {
 	_topic = topic;
+}
+
+std::string				Channel::get_topic_user()
+{
+	return (_topic_user);
+}
+
+void					Channel::set_topic_user(std::string topic_user)
+{
+	_topic_user = topic_user;
+}
+
+std::string				Channel::get_topic_time()
+{
+	return (_topic_time);
+}
+
+void					Channel::set_topic_time(std::string topic_time)
+{
+	_topic_time = topic_time;
 }
