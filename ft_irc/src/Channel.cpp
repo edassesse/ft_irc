@@ -84,3 +84,13 @@ void					Channel::set_topic_time(std::string topic_time)
 {
 	_topic_time = topic_time;
 }
+
+User				*Channel::get_operator()
+{
+	return (_operator);
+}
+
+void					Channel::set_operator(User *user)
+{
+	_operator = user;
+}

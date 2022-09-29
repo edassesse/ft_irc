@@ -79,7 +79,7 @@ void	print_infos(Server *server)
 		for (std::vector<Channel>::iterator it = server->_channels->begin(); it != server->_channels->end(); it++)
 		{
 			std::cout << "\t" << it->get_name() << std::endl;
-			std::cout << "\taddr = " << &it << std::endl;
+			std::cout << "\tOperator is : " << it->get_operator()->get_name() << std::endl;
 			if (!server->_channels->data()->_users->empty())
 			{
 				std::cout << "\t\tUser in channel" << std::endl;

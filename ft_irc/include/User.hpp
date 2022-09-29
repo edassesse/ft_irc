@@ -33,7 +33,6 @@ class	User
 		std::string				_nickname;
 		std::string				_name;
 		std::string				_password;
-		std::vector<int>		*_operator;
 		int						_nb_channel;
 };
 
