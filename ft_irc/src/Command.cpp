@@ -3,12 +3,12 @@
 void	dispatch_cmd(std::string buffer, Server *server, User *user)
 {
 	std::vector<std::string>	out;
-	std::string					cmd_name[7] = {"NICK", "USER", "CAP", "JOIN", "PRIVMSG", "PART", "TOPIC"};
+	std::string					cmd_name[8] = {"NICK", "USER", "CAP", "JOIN", "PRIVMSG", "PART", "TOPIC", "KICK"};
 	int							i;
 	Command						command;
 
 	out = split_vector(buffer, " \r\n,");
-	print_infos(server);
+	// print_infos(server);
 	std::cout << "Commande Split :" << std::endl;
 	for (std::vector<std::string>::iterator it = out.begin(); it != out.end(); ++it)
 		std::cout << "|" << *it << "|" << std::endl;
@@ -48,6 +48,10 @@ void	dispatch_cmd(std::string buffer, Server *server, User *user)
 		case TOPIC :
 			std::cout << "Topic switch" << std::endl;
 			command.command_topic(out, user, server);
+			break;
+		case KICK :
+			std::cout << "Kick switch" << std::endl;
+			command.command_kick(out, user, server);
 			break;
 		default :
 			std::cout << "Unknow command" << std::endl;
@@ -95,7 +99,7 @@ void	print_infos(Server *server)
 	{
 		for (std::vector<User>::iterator it = server->_users->begin(); it != server->_users->end(); it++)
 		{
-			std::cout << "\t" << it->get_name() << std::endl;
+			std::cout << "\t" << it->get_nickname() << std::endl;
 			if (it->get_nb_channel() != 0)
 			{
 				std::cout << "\t\tChannel in user" << std::endl;
@@ -153,11 +157,8 @@ Channel	*find_channel(Server *server, std::string channel_name)
 	if (!server->_channels)
 		return (NULL);
 	size = server->_channels->size();
-	// std::cout << "find channel size = " << size << std::endl;
 	for (size_t i = 0; i < size; i++)
 	{
-		// std::cout << "find channel i = " << i << std::endl;
-		// std::cout << "find channel name = " << server->_channels->at(i).get_name() << std::endl;
 		if (channel_name == server->_channels->at(i).get_name())
 			return (&server->_channels->at(i));
 	}

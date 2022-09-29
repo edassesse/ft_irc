@@ -144,3 +144,31 @@ void	Command::command_part(std::vector<std::string> out, User *user, Server *ser
 		user->answer = out[1] + " No such channel" + ENDLINE;
 	}
 }
+
+void	Command::command_kick(std::vector<std::string> out, User *user, Server *server)
+{
+	std::cout << "command Kick" << std::endl;
+	Channel		*channel;
+	
+	std::string	channel_name;
+
+	if (out[1][0] == '#')
+	{
+		channel_name = out[1].erase(0, 1);
+		if ((channel = find_channel(server, channel_name)) == NULL)
+		{
+			//Le channel n'existe pas => Pas de message d'erreurs ?
+			std::cout << "No Channel found" << std::endl;
+			user->answer = out[1] + " No such channel" + ENDLINE;
+		}
+		else
+		{
+			
+			user->answer = ":" + user->get_nickname() + "!" + user->get_name() + "@server PART #" + channel->get_name() + ENDLINE;
+		}
+	}
+	else
+	{
+		user->answer = out[1] + " No such channel" + ENDLINE;
+	}
+}
