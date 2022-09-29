@@ -54,10 +54,15 @@ void	Command::command_join(std::vector<std::string> out, User *user, Server *ser
 	Channel		*channel;
 	std::string	channel_name;
 	int			i = 1;
-
+	
 	std::cout << out.size() << std::endl;
-	while (i < out.size() && out[i][0] =='#')
+	while (i < out.size())
 	{
+		if (out[i][0] != '#')
+		{
+			std::cout << out[i] << " error name channel " << std::endl;
+			i++;
+		}
 		std::cout << "channel join = " << out[i] << std::endl;
 		channel_name = out[i].erase(0, 1);
 		if ((channel = find_channel(server, channel_name)) == NULL)
