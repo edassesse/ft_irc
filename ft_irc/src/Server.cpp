@@ -122,14 +122,18 @@ void	Server::run(Server *server)
 					valread++;
 				}
 				if (valread == 0 && server->_clientSd.at(i).revents == POLLHUP)
+				{
 					std::cerr << "User disconnected" << std::endl; // a changer je sais 
+					server->_clientSd.erase(server->_clientSd.begin() + i);
+					server->_clientAmount--;
+				}
 				else if (valread > 0)
 				{
 					buffer[valread] = 0;
 					std::cout << "Client " << server->_clientFd.at(i) << " sent:" << buffer << std::endl;
 					dispatch_cmd(buffer, server, &server->_users->at(i - 1));
 				}
-				std::cout << server->_clientAmount << std::endl;
+				/* std::cout << server->_clientSd.size() << std::endl; */
 				for (int j = 1; j < server->_clientAmount; j++)
 				{
 					if (i > 0 && server->_users->at(j - 1).answer != "")
