@@ -8,7 +8,7 @@ void	dispatch_cmd(std::string buffer, Server *server, User *user)
 	Command						command;
 
 	out = split_vector(buffer, " \r\n");
-	print_infos(server);
+	/* print_infos(server); */
 	std::cout << "Commande Split :" << std::endl;
 	for (std::vector<std::string>::iterator it = out.begin(); it != out.end(); ++it)
 		std::cout << "|" << *it << "|" << std::endl;
@@ -95,7 +95,7 @@ void	print_infos(Server *server)
 	{
 		for (std::vector<User>::iterator it = server->_users->begin(); it != server->_users->end(); it++)
 		{
-			std::cout << "\t" << it->get_name() << std::endl;
+			std::cout << "\t" << it->get_nickname() << std::endl;
 			if (it->get_nb_channel() != 0)
 			{
 				std::cout << "\t\tChannel in user" << std::endl;

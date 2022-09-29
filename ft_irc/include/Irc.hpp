@@ -7,6 +7,7 @@
 # include <sys/socket.h> 
 # include <poll.h> 
 # include <netinet/in.h>
+# include <fcntl.h>
 # include <vector>
 # include <string>
 # include <unistd.h>
