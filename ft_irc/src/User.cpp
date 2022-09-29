@@ -4,11 +4,13 @@ User::User(void) : wlcm_send(0), _nb_channel(0)
 {
 	answer = "";
 	std::cout << "Constructor User by default called" << std::endl;
+	_channels = new std::vector<Channel>;
 }
 
-User::User(User const &cpy) : wlcm_send(0)
+User::User(User const &cpy) : wlcm_send(0), _nb_channel(0)
 {
 	*this = cpy;
+	_channels = new std::vector<Channel>;
 }
 
 User::~User(void)
@@ -23,6 +25,7 @@ User	&User::operator=(User const &src)
 	this->_password = src._password;
 	this->answer = src.answer;
 	this->wlcm_send = src.wlcm_send;
+	this->_nb_channel = src._nb_channel;
 	return (*this);
 }
 

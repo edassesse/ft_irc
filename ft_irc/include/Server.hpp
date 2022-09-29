@@ -37,7 +37,7 @@ class	Server {
 		void	startServer(Server *server);
 		void	initServer(Server *server, int ac, char **av);
 		void	run(Server *server);
-		void	addSd(int socket, int events);
+		void	addSd(int socket, short events);
 		void	newUser(Server *server, int newSocket);
 		std::string				get_address()	{return _address;};
 		void					set_address(std::string addr)	{_address = addr;};
