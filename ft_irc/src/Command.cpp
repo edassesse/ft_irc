@@ -35,7 +35,7 @@ void	dispatch_cmd(std::string buffer, Server *server, User *user)
 			break;
 		case JOIN :
 			std::cout << "Join switch" << std::endl;
-			command.command_join(out, user, server);
+			command.command_join(out, user, server, buffer);
 			break;
 		case PRIVMSG :
 			std::cout << "Privmsg switch" << std::endl;

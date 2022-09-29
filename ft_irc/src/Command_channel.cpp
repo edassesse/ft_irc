@@ -48,38 +48,56 @@ void	Command::command_topic(std::vector<std::string> out, User *user, Server *se
 	}
 }
 
-void	Command::command_join(std::vector<std::string> out, User *user, Server *server)
+void	Command::command_join(std::vector<std::string> out, User *user, Server *server, std::string str)
 {
 	std::cout << "command Join" << std::endl;
+	std::vector<std::string>	split_comma;
 	Channel		*channel;
 	std::string	channel_name;
-	int			i = 1;
+	int			i = 0;
 	
-	std::cout << out.size() << std::endl;
-	while (i < out.size())
+	//std::cout << out.size() << std::endl;
+	std::cout << "----------------" << str.erase(0,5) << std::endl;
+
+	split_comma = split_vector(str, "\r\n,");
+	for (std::vector<std::string>::iterator it = split_comma.begin(); it != split_comma.end(); ++it)
+		std::cout << "|" << *it << "|" << std::endl;
+	while (i < split_comma.size())
 	{
-		if (out[i][0] != '#')
+		if (split_comma[i][0] != '#') 
 		{
-			std::cout << out[i] << " error name channel " << std::endl;
+				//std::cout << "ESPACEEEEE = " << split_comma[i][split_comma[i].size()] << std::endl;
+			std::cout << "# OU PAS " << split_comma[i][0] << std::endl;
+			user->answer += split_comma[i] + " No such channel" + ENDLINE;
 			i++;
 		}
-		std::cout << "channel join = " << out[i] << std::endl;
-		channel_name = out[i].erase(0, 1);
-		if ((channel = find_channel(server, channel_name)) == NULL)
+		else 
 		{
-			//creer le channel si il existe pas correspondant
-			channel = new Channel(user, channel_name);
-			//add channel in server
-			std::cout << "push back name = " << channel->get_name() << std::endl;
-			server->_channels->push_back(*channel);
+			if (split_comma[i-1][split_comma[i - 1].size() -1 ] == ' ')
+			{
+				std::cout << "ESPACEEEEE = " << split_comma[i-1][split_comma[i-1].size()] << std::endl;
+				break;
+			}
+			std::cout << "channel join = " << split_comma[i] << std::endl;
+			channel_name = split_comma[i].erase(0, 1);
+			if ((channel = find_channel(server, channel_name)) == NULL)
+			{
+				//creer le channel si il existe pas correspondant
+				channel = new Channel(user, channel_name);
+				//add channel in server
+				std::cout << "push back name = " << channel->get_name() << std::endl;
+				server->_channels->push_back(*channel);
+			}
+			add_channel_in_user(channel, user);
+			user->answer += ":" + user->get_nickname() + "!" + user->get_nickname() + "@server JOIN #" + channel->get_name() + ENDLINE;
+			i++;
 		}
-		add_channel_in_user(channel, user);
-		user->answer += ":" + user->get_nickname() + "!" + user->get_nickname() + "@server JOIN #" + channel->get_name() + ENDLINE;
-		i++;
 	}
-	if (i != out.size())
+	std::cout << " size = " << split_comma.size() <<std::endl;
+	std::cout << " i = " << i <<std::endl;
+	if (i != split_comma.size())
 	{
-		user->answer = out[i - 1] + " No such channel" + ENDLINE;
+		user->answer += split_comma[i++] + " No such channel" + ENDLINE;
 	}
 }
 
