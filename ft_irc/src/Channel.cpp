@@ -15,6 +15,7 @@ Channel::Channel(User *creator, std::string name)
 	_name = name;
 	_users = new std::vector<User>;
 	_users->push_back(*creator);
+	//mettre le user en operator dans user
 	_topic = "";
 	_topic_user = "";
 	_topic_time = "";
@@ -82,4 +83,14 @@ std::string				Channel::get_topic_time()
 void					Channel::set_topic_time(std::string topic_time)
 {
 	_topic_time = topic_time;
+}
+
+User				*Channel::get_operator()
+{
+	return (_operator);
+}
+
+void					Channel::set_operator(User *user)
+{
+	_operator = user;
 }

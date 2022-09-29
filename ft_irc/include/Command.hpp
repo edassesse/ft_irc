@@ -13,7 +13,8 @@ enum	Command_lst
 	JOIN,
 	PRIVMSG,
 	PART,
-	TOPIC
+	TOPIC,
+	KICK
 };
 
 class Command
@@ -29,6 +30,7 @@ class Command
 	void	command_privmsg(std::vector<std::string> out, User *user, Server *server);
 	void	command_part(std::vector<std::string> out, User *user, Server *server);
 	void	command_topic(std::vector<std::string> out, User *user, Server *server);
+	void	command_kick(std::vector<std::string> out, User *user, Server *server);
 	void	change_topic(std::string topic, std::string user, Channel *channel);
 	void	send_msg_to_channel_users(std::string msg, User *user, Channel *channel);
 
