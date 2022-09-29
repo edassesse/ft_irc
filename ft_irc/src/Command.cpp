@@ -7,8 +7,8 @@ void	dispatch_cmd(std::string buffer, Server *server, User *user)
 	int							i;
 	Command						command;
 
-	out = split_vector(buffer, " \r\n,");
-	// print_infos(server);
+	out = split_vector(buffer, " \r\n");
+	/* print_infos(server); */
 	std::cout << "Commande Split :" << std::endl;
 	for (std::vector<std::string>::iterator it = out.begin(); it != out.end(); ++it)
 		std::cout << "|" << *it << "|" << std::endl;

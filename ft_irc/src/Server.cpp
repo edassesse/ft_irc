@@ -33,12 +33,10 @@ void	Server::initServer(Server *server, int ac, char **av)
 	return;
 }
 
-void	Server::addSd(int socket, int events)
+void	Server::addSd(int socket, short events)
 {
-	struct pollfd	add;
+	struct pollfd	add = {socket, events, 0};
 
-	add.fd = socket;
-	add.events = events;
 	this->_clientSd.push_back(add);
 }
 
@@ -46,7 +44,7 @@ void	Server::startServer(Server *server)
 {
 	int	opt = 1;
 
-	if ((server->_masterSocket = socket(PF_INET, SOCK_STREAM, 0)) == 0)
+	if ((server->_masterSocket = socket(PF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		std::cerr << "socket failed" << std::endl;
 		exit(EXIT_FAILURE);
@@ -61,7 +59,7 @@ void	Server::startServer(Server *server)
 		std::cerr << "bind failed" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	if (listen(server->getMasterSocket(), 3) < 0)
+	if (listen(server->getMasterSocket(), 50) < 0)
 	{
 		std::cerr << "listen failed" << std::endl;
 		exit(EXIT_FAILURE);
@@ -80,65 +78,72 @@ void	Server::newUser(Server *server, int newSocket)
 	User	*user = new User();
 
 	server->_clientAmount++;
+	fcntl(newSocket, F_SETFL, O_NONBLOCK);
 	server->_users->push_back(*user);
 	server->_clientFd.push_back(newSocket);
-	server->addSd(newSocket, (POLLIN | POLLOUT)); /* MIGHT CHANGE */
+	server->addSd(newSocket, POLLIN); /* MIGHT CHANGE */
 }
 
 void	Server::run(Server *server)
 {
-	struct	sockaddr	newClient;
+	struct	sockaddr_in	newClient;
 	socklen_t			addrSize;
 	int					events;
 	int					newSocket;
 	int					valread;
-	int					newCo;
 	char				buffer[1024];
 	char				c = 0;
 
 	while (TRUE)
 	{
-		newCo = 0;
 		events = 0;
-		events = poll(server->_clientSd.data(), server->_clientAmount, -1);
-		if (server->_clientSd[0].revents == POLLIN)
+		if ((events = poll(server->_clientSd.data(), server->_clientSd.size(), -1)) < 0)
 		{
-			addrSize = sizeof(newClient);
-			newSocket = accept(server->_masterSocket, &newClient, &addrSize);
-			std::cout << "New Connection: " << newSocket << std::endl;
-			server->newUser(server, newSocket);
-			newCo = 1;
+			std::cerr << "Poll failed" << std::endl;
+			exit(0);
 		}
-		for (int i = 1; i < server->_clientAmount && events; i++)
+		for (int i = 0; i < server->_clientAmount; i++)
 		{
-			if (newCo || server->_clientSd[i].revents)
+			if (server->_clientSd.at(i).revents & POLLIN && i == 0)
+			{
+				std::cout << "=================================" << std::endl;
+				addrSize = sizeof(server->_sockAddress);
+				newSocket = accept(server->_masterSocket, (struct sockaddr *)&newClient, &addrSize);
+				std::cout << "New Connection: " << newSocket << std::endl;
+				server->newUser(server, newSocket);
+				server->_clientSd.at(i).revents = 0;
+			}
+			else
 			{
 				valread = 0;
-				while (read(server->_clientFd[i], &c, 1) > 0 && c != EOF && c != '\n')
+				while ((read(server->_clientFd.at(i), &c, 1)) > 0 && c != '\n')
 				{
 					buffer[valread] = c;
 					valread++;
 				}
-				if (valread == 0)
-				{
-					std::cout << "User disconnected" << std::endl; // a changer je sais 
-					exit(0) ;
-				}
-				else
+				if (valread == 0 && server->_clientSd.at(i).revents == POLLHUP)
+					std::cerr << "User disconnected" << std::endl; // a changer je sais 
+				else if (valread > 0)
 				{
 					buffer[valread] = 0;
-					std::cout << "Client " << server->_clientFd[i] << " sent:" << buffer << std::endl;
-					dispatch_cmd(buffer,server, &server->_users->at(i - 1));
+					std::cout << "Client " << server->_clientFd.at(i) << " sent:" << buffer << std::endl;
+					dispatch_cmd(buffer, server, &server->_users->at(i - 1));
 				}
-				if (server->_users[i - 1].data()->answer != "")
+				std::cout << server->_clientAmount << std::endl;
+				for (int j = 1; j < server->_clientAmount; j++)
 				{
-					std::string answer = server->_users[i - 1].data()->answer;
-					std::cout << answer.c_str() << std::endl;
-					send(server->_clientFd[i], answer.c_str(), answer.length(), 0);
-					server->_users[i - 1].data()->answer = "";
+					if (i > 0 && server->_users->at(j - 1).answer != "")
+					{
+						std::string answer = server->_users->at(j - 1).answer + ENDLINE;
+						std::cout << answer.c_str() << std::endl;
+						send(server->_clientFd.at(j), answer.c_str(), answer.length(), 0);
+						server->_users->at(j - 1).answer = "";
+					}
 				}
-				events--;
 			}
+			server->_clientSd.at(i).revents = 0;
 		}
+		for (int i = 0; i < server->_clientAmount; i++)
+			server->_clientSd.at(i).revents = 0;
 	}
 }
